@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Garcipat.AbacusApi.Generator</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Generation settings. Changing any of them regenerates the client on the next build. -->
+  <PropertyGroup>
+    <!-- Abacus release to generate from: OpenApi/abacus-$(AbacusRelease).json (full download, gitignored) and .trimmed.json (committed). -->
+    <AbacusRelease>2026.201</AbacusRelease>
+    <AbacusMajor>$(AbacusRelease.Substring(0, $(AbacusRelease.IndexOf('.'))))</AbacusMajor>
+    <!-- Entity sets kept in the trimmed document (needs the full download to take effect). -->
+    <AbacusEntitySets>InAndOuts;ProjectBookings;Projects;ServiceCodes;Employees</AbacusEntitySets>
+    <AbacusClientNamespace>Garcipat.AbacusApi.Client.V$(AbacusMajor)</AbacusClientNamespace>
+    <AbacusClientClassName>AbacusApi</AbacusClientClassName>
+    <AbacusClientOutput>$(MSBuildProjectDirectory)\..\AbacusApi.Client\V$(AbacusMajor)\$(AbacusClientClassName)V$(AbacusMajor).cs</AbacusClientOutput>
+    <!-- Generate after building this project; off for Release (packing uses the committed file). Override with -p:AbacusGenerateOnBuild=false. -->
+    <AbacusGenerateOnBuild Condition="'$(AbacusGenerateOnBuild)' == '' And '$(Configuration)' != 'Release'">true</AbacusGenerateOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NSwag.CodeGeneration.CSharp" Version="14.7.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- A glob, so a missing full download (gitignored, absent on CI) doesn't force a rerun. -->
+    <AbacusOpenApiDocument Include="OpenApi\abacus-$(AbacusRelease)*.json" />
+  </ItemGroup>
+
+  <!--
+    Runs the generator after the build, only when the generator, this file or an OpenAPI document changed.
+    AbacusApi.Client references this project for build order only, so building the client, the tests or the
+    solution runs this first.
+  -->
+  <Target Name="GenerateAbacusClient"
+          AfterTargets="Build"
+          Condition="'$(AbacusGenerateOnBuild)' == 'true'"
+          Inputs="$(TargetPath);$(MSBuildProjectFullPath);@(AbacusOpenApiDocument)"
+          Outputs="$(AbacusClientOutput)">
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; --release $(AbacusRelease) --openapi-directory &quot;$(MSBuildProjectDirectory)\OpenApi&quot; --entity-sets &quot;$(AbacusEntitySets)&quot; --namespace $(AbacusClientNamespace) --class-name $(AbacusClientClassName) --output &quot;$(AbacusClientOutput)&quot;" />
+  </Target>
+
+</Project>

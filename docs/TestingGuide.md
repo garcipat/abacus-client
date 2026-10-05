@@ -163,11 +163,7 @@ var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://abacus
 private readonly AbacusOptions _options = new() { BaseUrl = new Uri("https://abacus.test/"), Mandant = 7777, ClientId = "client" };
 ```
 
-`AbacusOptions` uses `init` properties, so per-test variations use `with`:
-
-```csharp
-var uut = CreateUut(_options with { Mandant = 1 });
-```
+`AbacusOptions` has settable properties, so a test changes the field before acting (e.g. `_options.Scopes = [...]`) and the UUT sees it.
 
 **Options binding and validation:** test through a real `ServiceCollection` with an in-memory configuration (`ConfigurationBuilder().AddInMemoryCollection(...)`), resolve `IOptions<AbacusOptions>` and assert on `.Value`, or on `OptionsValidationException` for invalid input.
 

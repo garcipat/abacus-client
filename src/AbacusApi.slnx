@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="AbacusApi.Client/AbacusApi.Client.csproj" />
+  <Project Path="AbacusApi.Generator/AbacusApi.Generator.csproj" />
   <Project Path="AbacusApi.Tests/AbacusApi.Tests.csproj" />
 </Solution>
