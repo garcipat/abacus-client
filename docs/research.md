@@ -288,21 +288,29 @@ services.AddHttpClient<IAbacusApi, AbacusApi>((sp, http) =>
 
 **Auth is pluggable**, since the right flow depends on the consumer:
 - `IAbacusTokenProvider` (`Task<string> GetAccessTokenAsync(CancellationToken)`).
-- The package ships `ClientCredentialsTokenProvider` (option A).
-- For option B the consuming app registers its own provider, which owns the browser login and refresh-token storage (app-specific, stays out of the package).
+- The package ships `ClientCredentialsTokenProvider` (option A, default) and `InteractiveBrowserTokenProvider` (option B, opt-in for desktop/local apps), each in its own folder under `Authentication/TokenProviders/` (`ClientCredentials/`, `InteractiveBrowser/`); shared pieces (`IAbacusTokenProvider`, `AbacusAuthHandler`, OpenID discovery, `TokenEndpoint`) stay in `Authentication/`. Anything else can be plugged in with `UseTokenProvider<T>()`.
+- Features are added through the `configure` callback of `AddAbacusApi` (`Action<AbacusApiBuilder>`). It runs after the defaults are registered, so a hook can replace them. `AbacusApiBuilder` exposes `Services` and the typed client's `HttpClient` builder, so further features can be added as extension methods on it. `AddAbacusApi` returns `IServiceCollection`.
 
 ```csharp
-services.AddAbacusApi(configuration);               // client credentials (default provider)
-services.AddAbacusApi(configuration)
-        .AddTokenProvider<MyAppAbacusTokenProvider>(); // user-dependent, provided by the app
+services.AddAbacusApi(configuration);                                                // A: client credentials
+services.AddAbacusApi(configuration, api => api.UseInteractiveBrowserLogin());       // B: browser login as the user
+services.AddAbacusApi(configuration, api => api.UseTokenProvider<MyTokenProvider>()); // anything else
 ```
 
-**Versioning:** namespace and folder per Abacus release (`…V2026`). The package version tracks it (e.g. `2026.201.0` for "V 2026.201"). A 2025 server would get a `V2025` generation from the 2025 doc.
+**`InteractiveBrowserTokenProvider`** (option B):
+- On the first call: discovery, then `IAuthorizationCodeReceiver` shows `authorization_endpoint?response_type=code&client_id&scope&redirect_uri&state` (+ PKCE `code_challenge`/`S256` unless `UsePkce = false`) and returns the callback's query. `state` must match, `error`/`error_description` become an `AbacusLoginException`. The code is exchanged (`grant_type=authorization_code`, `code_verifier`, `client_secret` for a trusted client).
+- Afterwards the access token is renewed with `grant_type=refresh_token`. Abacus returns the refresh token only once and reuses it, so the stored one is only replaced when a new one comes. If Abacus rejects it (400/401: expired, logout, another integration took over the user), it is deleted and the browser login opens again.
+- `LoopbackBrowserCodeReceiver` (default): requires an `http` loopback `RedirectUri`, starts an `HttpListener` on it, opens the system browser, answers other paths (favicon) with 404, shows a "you can close this window" page, and times out after 5 minutes.
+- `ITokenCache`: `FileTokenCache` (default on Windows) stores the refresh token under `%LOCALAPPDATA%\Garcipat.AbacusApi\tokens\{hash of server, Mandant, client}.bin`, encrypted with DPAPI for the current user; an unreadable file counts as "no token". `MemoryTokenCache` elsewhere (log in once per process).
+- Still needs a user-dependent service user in Q910 (public client, `RedirectUri` registered, scopes on it and on the user in Q981). Whether Abacus accepts a `localhost` redirect and PKCE is untested (see [Open questions](#open-questions)).
+
+**Versioning:** namespace and folder per Abacus release (`…V2026`); a 2025 server would get a `V2025` generation from the 2025 doc. The package itself follows Semantic Versioning from 0.1.0, independent of the Abacus release; which Abacus release a version is generated from is noted in [CHANGELOG.md](../CHANGELOG.md). Releases are made by pushing a `v*` tag (see [README → Releasing](../README.md#releasing)).
 
 **Tests:** one test project, **`AbacusApi.Tests`**, for all projects, with a folder per project under test (`Client/`, `Generator/`, …) rather than a test project per project.
 - `Generator/`: trimming, patching and the NSwag settings (`long`/`decimal`, `DateOnly`/`TimeOnly`, no `BaseUrl`, System.Text.Json).
 - `Client/`: options (base address), DI registration (binding, validation, default and replaced token provider, base address and bearer token on real requests through the stub handler), `AbacusAuthHandler`, `ClientCredentialsTokenProvider` (discovery, Basic auth, scopes, caching, renewal, errors), and serialization of the generated client (no unset properties in a PATCH, Abacus date/time/decimal formats).
-- No integration tests for now: there is no Abacus server or container to test against. The calls we use are tested against a stub `HttpMessageHandler` (see [TestingGuide.md](TestingGuide.md)).
+- `Client/` also covers `InteractiveBrowserTokenProvider` (authorization request, PKCE, code exchange, refresh, cached and rejected refresh tokens, state and error handling) with a fake code receiver, `LoopbackBrowserCodeReceiver` with a real `HttpListener`, and `FileTokenCache` (Windows only).
+- `Integration/`: opt-in tests against a real server with the interactive login (own `userinfo`, service codes), skipped unless configured through environment variables (see [TestingGuide.md](TestingGuide.md#integration-tests)).
 
 **Naming:** "Abacus" is Abacus Research AG's product name. The package is prefixed (`Garcipat.AbacusApi.Client`) and described as unofficial.
 
@@ -319,7 +327,8 @@ To be answered per Abacus installation (and ideally once on a test server):
 7. **Presence:** is `Presence` (`Office`/`Homeoffice`/`Remote`) required by the configuration?
 8. **`InAndOut.Value`:** computed by Abacus or sent by the client?
 9. **`ProjectBooking` hours:** do they go into `Values.InternalValue.Quantity`, `Values.ExternalValue.Quantity`, or both? Are `Price`/`Amount` filled in by Abacus from the rates?
-10. **Test server:** is there a test server/Mandant (the API Hub has a "Testservers" page)? That would allow integration tests.
+10. **Test server:** is there a test server/Mandant (the API Hub has a "Testservers" page)? That would allow integration tests that write.
+11. **PKCE:** does Abacus accept (or require) `code_challenge`/`code_verifier` for public clients? If it rejects them, set `UsePkce = false`.
 
 ## Sources
 

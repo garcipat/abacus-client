@@ -7,6 +7,7 @@
 | Type        | Use                                                                 | Infrastructure                                   |
 | ----------- | ------------------------------------------------------------------- | ------------------------------------------------ |
 | Unit        | Options binding/validation, auth handler, token provider, generator pruning/patching | Moq + AwesomeAssertions, stub `HttpMessageHandler` |
+| Integration | Real requests against an Abacus server with the interactive login (opt-in) | Environment variables, `[InteractiveIntegrationFact]`, see [Integration Tests](#integration-tests) |
 
 ## Project Layout
 
@@ -16,6 +17,8 @@ There is **one test project, `src/AbacusApi.Tests`**, for all projects. Inside i
 src/AbacusApi.Tests/
   Client/          tests for AbacusApi.Client
   Generator/       tests for AbacusApi.Generator
+  Integration/     opt-in tests against a real Abacus server
+  Infrastructure/  test doubles and attributes
 ```
 
 Namespaces follow the folders (`Garcipat.AbacusApi.Tests.Client`, …). Don't add a test project per project.
@@ -211,7 +214,49 @@ The generator's pruning and patching are tested on **small hand-written OpenAPI 
 
 ## Generated Client Tests
 
-There are **no integration tests for now**: Abacus is commercial on-premise software with no container image or public sandbox, so there is no server to test against. The generated client is checked with unit tests on the stub `HttpMessageHandler` for the few calls we use: the request goes to the right URL (`…/mandants/{Mandant}/ProjectBookings`) with the right method, and the JSON body and response bind to the expected properties (`long? EmployeeId`, `decimal? Quantity`, the time strings). The response JSON in these tests is taken from the shapes in the OpenAPI document.
+Abacus is commercial on-premise software with no container image or public sandbox, so the normal test run never talks to a server (see [Integration Tests](#integration-tests) for the opt-in exception). The generated client is checked with unit tests on the stub `HttpMessageHandler` for the few calls we use: the request goes to the right URL (`…/mandants/{Mandant}/ProjectBookings`) with the right method, and the JSON body and response bind to the expected properties (`long? EmployeeId`, `decimal? Quantity`, the time strings). The response JSON in these tests is taken from the shapes in the OpenAPI document.
+
+## Integration Tests
+
+`Integration/` holds tests against a **real Abacus server** with the interactive browser login. They are marked `[InteractiveIntegrationFact]` and `[Trait("Category", "Integration")]`, and are **skipped unless the connection is configured through environment variables**, so they never run on CI or by accident:
+
+There are two sets, each skipped unless its variables are set:
+
+- **`ClientCredentialsLoginTests`** (`[ClientCredentialsIntegrationFact]`: `BaseUrl`, `Mandant`, `ClientId`, `ClientSecret`): service-user login, then service codes and projects. Easiest against **Abacus' public test servers** (Mandant 7777, a pre-configured service user, see [research.md](research.md#open-questions) and the API Hub "Testservers" tab):
+
+  ```powershell
+  .\scripts\Set-AbacusDemoServerEnvironment.ps1        # asks for the service user's Client-ID and secret
+  dotnet test src/AbacusApi.slnx --filter "Category=Integration" --logger "console;verbosity=detailed"
+  ```
+
+  The credentials are shown on the server's `/createuser` page after double-clicking the Abacus icon in the top-left corner. No customer or private data on these servers. If the 2026 server shows "No User Credentials available", try `-Version 2025` or `-Version 2024`.
+
+Both scripts set the variables **for the current PowerShell window only**. To run the tests from Visual Studio, Rider or another terminal, add **`-Persist`**: the variables are then also stored in the Windows user environment (`HKCU\Environment`, a secret in plain text), and programs started afterwards see them. Restart the IDE once. `.\scripts\Clear-AbacusTestEnvironment.ps1` removes them again from the session and the user environment.
+
+- **`InteractiveLoginTests`** (`[InteractiveIntegrationFact]`: `BaseUrl`, `Mandant`, `ClientId`, `RedirectUri`): the browser login with a user-dependent service user, see below.
+
+The quickest way to set the interactive ones is `scripts/Set-AbacusTestEnvironment.ps1`: it takes the values as parameters, reduces a portal URL to the server root, checks that the server answers its OpenID discovery, and sets the variables in the current session:
+
+```powershell
+.\scripts\Set-AbacusTestEnvironment.ps1 -BaseUrl https://abacus.example.ch -Mandant 7777 -ClientId <Client-ID>
+dotnet test src/AbacusApi.slnx --filter "Category=Integration" --logger "console;verbosity=detailed"
+```
+
+Or by hand:
+
+```powershell
+$env:Abacus__BaseUrl = "https://abacus.example.ch"
+$env:Abacus__Mandant = "7777"
+$env:Abacus__ClientId = "…"                                  # user-dependent service user from Q910
+$env:Abacus__RedirectUri = "http://localhost:53682/callback"  # registered for that service user
+# optional, default: openid profile email abacus.entity.projectbase.read
+$env:Abacus__Scopes__0 = "openid"
+dotnet test src/AbacusApi.slnx --filter "Category=Integration"
+```
+
+- The first test opens the browser for the Abacus login. The refresh token is then kept in the DPAPI file cache (`%LOCALAPPDATA%\Garcipat.AbacusApi\tokens\`), so the other tests and later runs log in silently until it expires.
+- They only read (the user's own OpenID `userinfo`, a few service codes) and print what they get to the test output (`--logger "console;verbosity=detailed"`).
+- To run only unit tests explicitly: `--filter "Category!=Integration"` (not needed in practice, since they are skipped without configuration).
 
 ---
 

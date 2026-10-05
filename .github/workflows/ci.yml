@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore src/AbacusApi.slnx
+
+      # The Debug build runs the generator (from the committed trimmed document; the full download is not in git).
+      - name: Build
+        run: dotnet build src/AbacusApi.slnx --no-restore
+
+      - name: Check that the generated client is up to date
+        shell: pwsh
+        run: |
+          git diff --exit-code -- src/AbacusApi.Client src/AbacusApi.Generator/OpenApi
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "The generated client differs from the committed one. Build the generator locally and commit the result."
+            exit 1
+          }
+
+      # Integration tests skip themselves (no Abacus__* variables on CI).
+      - name: Test
+        run: dotnet test src/AbacusApi.slnx --no-build --verbosity normal
+
+      # No pack/artifact here: the client packs on every build (GeneratePackageOnBuild), so packing errors already fail
+      # the Build step. Publishing is the release workflow's job.

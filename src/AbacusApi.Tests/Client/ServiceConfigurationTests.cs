@@ -2,6 +2,8 @@ using System.Net;
 using AwesomeAssertions;
 using Garcipat.AbacusApi.Client;
 using Garcipat.AbacusApi.Client.Authentication;
+using Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
+using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 using Garcipat.AbacusApi.Client.V2026;
 using Garcipat.AbacusApi.Tests.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -67,6 +69,32 @@ public class ServiceConfigurationTests
     }
 
     [Fact]
+    public void AddAbacusApi_ShouldReturnServiceCollectionForChaining()
+    {
+        var services = new ServiceCollection();
+
+        var result = services.AddAbacusApi(Configuration(), api => api.UseTokenProvider<FixedTokenProvider>());
+
+        result.Should().BeSameAs(services);
+    }
+
+    [Fact]
+    public void AddAbacusApi_WithOptionsAndBuilder_ShouldApplyBoth()
+    {
+        using var provider = BuildProvider(services => services.AddAbacusApi(
+            options =>
+            {
+                options.BaseUrl = new Uri("https://abacus.test");
+                options.Mandant = 1;
+                options.ClientId = "client";
+            },
+            api => api.UseTokenProvider<FixedTokenProvider>()));
+
+        provider.GetRequiredService<IOptions<AbacusOptions>>().Value.Mandant.Should().Be(1);
+        provider.GetRequiredService<IAbacusTokenProvider>().Should().BeOfType<FixedTokenProvider>();
+    }
+
+    [Fact]
     public void AddAbacusApi_WithoutTokenProvider_ShouldUseClientCredentials()
     {
         using var provider = BuildProvider(services => services.AddAbacusApi(Configuration()));
@@ -75,17 +103,39 @@ public class ServiceConfigurationTests
     }
 
     [Fact]
-    public void AddTokenProvider_ShouldReplaceDefaultProvider()
+    public void UseTokenProvider_ShouldReplaceDefaultProvider()
     {
-        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration()).AddTokenProvider<FixedTokenProvider>());
+        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration(), api => api.UseTokenProvider<FixedTokenProvider>()));
 
         provider.GetRequiredService<IAbacusTokenProvider>().Should().BeOfType<FixedTokenProvider>();
     }
 
     [Fact]
+    public void UseInteractiveBrowserLogin_ShouldRegisterInteractiveProvider()
+    {
+        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration(), api => api.UseInteractiveBrowserLogin()));
+
+        provider.GetRequiredService<IAbacusTokenProvider>().Should().BeOfType<InteractiveBrowserTokenProvider>();
+        provider.GetRequiredService<IAuthorizationCodeReceiver>().Should().BeOfType<LoopbackBrowserCodeReceiver>();
+    }
+
+    [Fact]
+    public void UseInteractiveBrowserLogin_ShouldUseFileCacheOnWindowsAndMemoryElsewhere()
+    {
+        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration(), api => api.UseInteractiveBrowserLogin()));
+
+        var cache = provider.GetRequiredService<ITokenCache>();
+
+        if (OperatingSystem.IsWindows())
+            cache.Should().BeOfType<FileTokenCache>();
+        else
+            cache.Should().BeOfType<MemoryTokenCache>();
+    }
+
+    [Fact]
     public async Task AbacusApi_ShouldSendRequestsToMandantBaseAddress()
     {
-        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration()).AddTokenProvider<FixedTokenProvider>());
+        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration(), api => api.UseTokenProvider<FixedTokenProvider>()));
 
         await provider.GetRequiredService<IAbacusApi>().ListServiceCodesAsync();
 
@@ -95,7 +145,7 @@ public class ServiceConfigurationTests
     [Fact]
     public async Task AbacusApi_ShouldSendBearerTokenFromProvider()
     {
-        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration()).AddTokenProvider<FixedTokenProvider>());
+        using var provider = BuildProvider(services => services.AddAbacusApi(Configuration(), api => api.UseTokenProvider<FixedTokenProvider>()));
 
         await provider.GetRequiredService<IAbacusApi>().ListServiceCodesAsync();
 

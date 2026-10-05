@@ -2,7 +2,7 @@ using AwesomeAssertions;
 using Garcipat.AbacusApi.Client.Authentication;
 using Garcipat.AbacusApi.Tests.Infrastructure;
 
-namespace Garcipat.AbacusApi.Tests.Client;
+namespace Garcipat.AbacusApi.Tests.Client.Authentication;
 
 public class AbacusAuthHandlerTests
 {

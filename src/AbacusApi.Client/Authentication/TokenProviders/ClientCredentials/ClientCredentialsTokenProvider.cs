@@ -1,10 +1,9 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 
-namespace Garcipat.AbacusApi.Client.Authentication;
+namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
 
 /// <summary>
 /// User-independent service user (OAuth client credentials). Reads the token endpoint from
@@ -13,13 +12,8 @@ namespace Garcipat.AbacusApi.Client.Authentication;
 public sealed class ClientCredentialsTokenProvider(IHttpClientFactory httpClientFactory, IOptions<AbacusOptions> options, TimeProvider timeProvider)
     : IAbacusTokenProvider, IDisposable
 {
-    public const string HttpClientName = "Garcipat.AbacusApi.Token";
-
-    /// <summary>Renew this long before the token expires, so a request never goes out with a token that expires in flight.</summary>
-    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromSeconds(30);
-
     private readonly SemaphoreSlim _lock = new(1, 1);
-    private Uri? _tokenEndpoint;
+    private readonly OpenIdDiscovery _discovery = new();
     private string? _accessToken;
     private DateTimeOffset _renewAt;
 
@@ -47,14 +41,14 @@ public sealed class ClientCredentialsTokenProvider(IHttpClientFactory httpClient
         if (string.IsNullOrEmpty(settings.ClientSecret))
             throw new InvalidOperationException("Abacus:ClientSecret is required for the client credentials flow.");
 
-        using var http = httpClientFactory.CreateClient(HttpClientName);
-        _tokenEndpoint ??= await DiscoverTokenEndpointAsync(http, settings, cancellationToken).ConfigureAwait(false);
+        using var http = httpClientFactory.CreateClient(TokenEndpoint.HttpClientName);
+        var configuration = await _discovery.GetAsync(http, settings.BaseUrl, cancellationToken).ConfigureAwait(false);
 
         var form = new List<KeyValuePair<string, string>> { new("grant_type", "client_credentials") };
         if (settings.Scopes.Count > 0)
             form.Add(new("scope", string.Join(' ', settings.Scopes)));
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, _tokenEndpoint) { Content = new FormUrlEncodedContent(form) };
+        using var request = new HttpRequestMessage(HttpMethod.Post, configuration.TokenEndpoint) { Content = new FormUrlEncodedContent(form) };
         request.Headers.Authorization = new AuthenticationHeaderValue(
             "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{settings.ClientId}:{settings.ClientSecret}")));
 
@@ -64,20 +58,6 @@ public sealed class ClientCredentialsTokenProvider(IHttpClientFactory httpClient
             ?? throw new InvalidOperationException("The Abacus token endpoint returned no token.");
 
         _accessToken = token.AccessToken;
-        _renewAt = timeProvider.GetUtcNow() + TimeSpan.FromSeconds(token.ExpiresIn) - ExpiryMargin;
+        _renewAt = timeProvider.GetUtcNow() + TimeSpan.FromSeconds(token.ExpiresIn) - TokenEndpoint.ExpiryMargin;
     }
-
-    private static async Task<Uri> DiscoverTokenEndpointAsync(HttpClient http, AbacusOptions settings, CancellationToken cancellationToken)
-    {
-        var discoveryUrl = new Uri(settings.BaseUrl, "/.well-known/openid-configuration");
-        var configuration = await http.GetFromJsonAsync<OpenIdConfiguration>(discoveryUrl, cancellationToken).ConfigureAwait(false);
-        return configuration?.TokenEndpoint
-            ?? throw new InvalidOperationException($"{discoveryUrl} returned no token_endpoint.");
-    }
-
-    private sealed record OpenIdConfiguration([property: JsonPropertyName("token_endpoint")] Uri? TokenEndpoint);
-
-    private sealed record TokenResponse(
-        [property: JsonPropertyName("access_token")] string AccessToken,
-        [property: JsonPropertyName("expires_in")] int ExpiresIn);
 }

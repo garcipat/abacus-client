@@ -1,0 +1,74 @@
+name: Release
+
+# Push a tag vMAJOR.MINOR.PATCH (e.g. v0.1.0) whose version has a section in CHANGELOG.md. See README → Releasing.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write   # create the GitHub Release
+  packages: write   # publish to GitHub Packages
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Version from tag
+        id: version
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+            Write-Error "Tag ${{ github.ref_name }} is not vMAJOR.MINOR.PATCH[-prerelease]."
+            exit 1
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          if ($version.Contains("-")) { "prerelease=true" >> $env:GITHUB_OUTPUT } else { "prerelease=false" >> $env:GITHUB_OUTPUT }
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $lines = Get-Content CHANGELOG.md -Encoding utf8
+          $start = ($lines | Select-String -Pattern "^## \[$([regex]::Escape($version))\]" | Select-Object -First 1).LineNumber
+          if (-not $start) {
+            Write-Error "CHANGELOG.md has no section '## [$version]'. Move the Unreleased entries there before tagging."
+            exit 1
+          }
+          $notes = $lines | Select-Object -Skip $start | ForEach-Object -Begin { $done = $false } -Process {
+            if ($done -or $_ -match '^## \[' -or $_ -match '^\[[^\]]+\]: ') { $done = $true } else { $_ }
+          }
+          ($notes -join "`n").Trim() | Set-Content release-notes.md -Encoding utf8
+
+      - name: Restore
+        run: dotnet restore src/AbacusApi.slnx
+
+      - name: Build
+        run: dotnet build src/AbacusApi.slnx -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Test
+        run: dotnet test src/AbacusApi.slnx -c Release --no-build --verbosity normal
+
+      - name: Pack
+        run: dotnet pack src/AbacusApi.Client -c Release --no-build -o artifacts -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Publish to GitHub Packages
+        run: dotnet nuget push "artifacts/*.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key "${{ secrets.GITHUB_TOKEN }}" --skip-duplicate
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $flags = @()
+          if ("${{ steps.version.outputs.prerelease }}" -eq "true") { $flags += "--prerelease" }
+          gh release create "${{ github.ref_name }}" (Get-ChildItem artifacts/*.nupkg).FullName --title "${{ github.ref_name }}" --notes-file release-notes.md @flags

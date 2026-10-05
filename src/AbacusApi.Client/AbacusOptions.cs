@@ -25,6 +25,18 @@ public sealed record AbacusOptions
     /// <summary>Scopes to request, e.g. <c>abacus.entity.projectbooking.readwrite</c>.</summary>
     public IReadOnlyList<string> Scopes { get; set; } = [];
 
+    /// <summary>
+    /// Interactive (user-dependent) login only: the loopback URL the browser is sent back to, e.g.
+    /// <c>http://localhost:53682/callback</c>. Must be registered for the service user in Q910.
+    /// </summary>
+    public Uri? RedirectUri { get; set; }
+
+    /// <summary>
+    /// Interactive login only: send a PKCE code challenge (RFC 7636), recommended for public clients.
+    /// The Abacus documentation doesn't mention PKCE; switch it off if the server rejects it.
+    /// </summary>
+    public bool UsePkce { get; set; } = true;
+
     /// <summary><c>{BaseUrl}/api/entity/v1/mandants/{Mandant}/</c>, the base address of the entity endpoints. A method, so options validation (which reads all properties) doesn't evaluate it while <see cref="BaseUrl"/> is still missing.</summary>
     public Uri GetEntityBaseAddress() => new(WithTrailingSlash(BaseUrl), $"api/entity/v1/mandants/{Mandant}/");
 

@@ -8,11 +8,15 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Local builds only. Releases take the version from the git tag (release workflow: -p:Version=…), see CHANGELOG.md. -->
     <Version>0.1.0</Version>
     <Authors>Patrick Garcia</Authors>
     <Product>Abacus API Client</Product>
     <Description>Unofficial C# client for the Abacus ERP REST API (OData), generated with NSwag. Not affiliated with Abacus Research AG.</Description>
+    <PackageProjectUrl>https://github.com/garcipat/abacus-client</PackageProjectUrl>
     <RepositoryUrl>https://github.com/garcipat/abacus-client</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>abacus;erp;odata;api;client</PackageTags>
   </PropertyGroup>
 
 </Project>

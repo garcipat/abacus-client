@@ -1,5 +1,6 @@
 using Garcipat.AbacusApi.Client;
 using Garcipat.AbacusApi.Client.Authentication;
+using Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -11,35 +12,40 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceConfiguration
 {
-    /// <summary>Registers <c>IAbacusApi</c> with options from the <c>Abacus</c> section.</summary>
-    public static AbacusApiBuilder AddAbacusApi(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddAbacusApi(configuration.GetSection(AbacusOptions.SectionName));
+    /// <summary>
+    /// Registers <c>IAbacusApi</c> with options from the <c>Abacus</c> section.
+    /// <paramref name="configure"/> adds features, e.g. <c>api =&gt; api.UseInteractiveBrowserLogin()</c>.
+    /// </summary>
+    public static IServiceCollection AddAbacusApi(this IServiceCollection services, IConfiguration configuration, Action<AbacusApiBuilder>? configure = null) =>
+        services.AddAbacusApi(configuration.GetSection(AbacusOptions.SectionName), configure);
 
     /// <summary>Registers <c>IAbacusApi</c> with options from the given section.</summary>
-    public static AbacusApiBuilder AddAbacusApi(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddAbacusApi(this IServiceCollection services, IConfigurationSection section, Action<AbacusApiBuilder>? configure = null)
     {
         services.AddOptions<AbacusOptions>().Bind(section).ValidateDataAnnotations().ValidateOnStart();
-        return services.AddAbacusApiCore();
+        return services.AddAbacusApiCore(configure);
     }
 
     /// <summary>Registers <c>IAbacusApi</c> with options set in code.</summary>
-    public static AbacusApiBuilder AddAbacusApi(this IServiceCollection services, Action<AbacusOptions> configure)
+    public static IServiceCollection AddAbacusApi(this IServiceCollection services, Action<AbacusOptions> configureOptions, Action<AbacusApiBuilder>? configure = null)
     {
-        services.AddOptions<AbacusOptions>().Configure(configure).ValidateDataAnnotations().ValidateOnStart();
-        return services.AddAbacusApiCore();
+        services.AddOptions<AbacusOptions>().Configure(configureOptions).ValidateDataAnnotations().ValidateOnStart();
+        return services.AddAbacusApiCore(configure);
     }
 
-    private static AbacusApiBuilder AddAbacusApiCore(this IServiceCollection services)
+    /// <summary>The defaults first, then the builder hooks, so a hook can replace any default.</summary>
+    private static IServiceCollection AddAbacusApiCore(this IServiceCollection services, Action<AbacusApiBuilder>? configure)
     {
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IAbacusTokenProvider, ClientCredentialsTokenProvider>();
         services.TryAddTransient<AbacusAuthHandler>();
-        services.AddHttpClient(ClientCredentialsTokenProvider.HttpClientName);
+        services.AddHttpClient(TokenEndpoint.HttpClientName);
 
-        services.AddHttpClient<V2026.IAbacusApi, V2026.AbacusApi>((provider, http) =>
+        var apiClient = services.AddHttpClient<V2026.IAbacusApi, V2026.AbacusApi>((provider, http) =>
                 http.BaseAddress = provider.GetRequiredService<IOptions<AbacusOptions>>().Value.GetEntityBaseAddress())
             .AddHttpMessageHandler<AbacusAuthHandler>();
 
-        return new AbacusApiBuilder(services);
+        configure?.Invoke(new AbacusApiBuilder(services, apiClient));
+        return services;
     }
 }

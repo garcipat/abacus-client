@@ -1,8 +1,10 @@
 # abacus-client
 
+[![CI](https://github.com/garcipat/abacus-client/actions/workflows/ci.yml/badge.svg)](https://github.com/garcipat/abacus-client/actions/workflows/ci.yml)
+
 Unofficial C# client for the [Abacus](https://www.abacus.ch) ERP REST API (OData 4.0), generated with NSwag from the OpenAPI document Abacus publishes on the [API Hub](https://apihub.abacus.ch). Not affiliated with Abacus Research AG.
 
-Status: generator, generated client, DI registration and client-credentials auth done; not yet tried against a real Abacus server. See [docs/research.md](docs/research.md) for the API, the available integration options, authentication and the library design, and [docs/TestingGuide.md](docs/TestingGuide.md) for test conventions.
+Status: generator, generated client, DI registration, client-credentials and interactive browser login done; not yet tried against a real Abacus server (opt-in integration tests are ready, see [docs/TestingGuide.md](docs/TestingGuide.md#integration-tests)). See [docs/research.md](docs/research.md) for the API, the available integration options, authentication and the library design, and [docs/TestingGuide.md](docs/TestingGuide.md) for test conventions. Changes per version: [CHANGELOG.md](CHANGELOG.md).
 
 ## OpenAPI document
 
@@ -33,13 +35,20 @@ The settings (Abacus release, entity sets, namespace, class name, output path, o
 }
 ```
 
-The client secret goes into user secrets or the `Abacus__ClientSecret` environment variable, never into `appsettings.json`.
+Pick how to log in:
 
 ```csharp
-services.AddAbacusApi(configuration);                      // OAuth client credentials (service user)
+// Service user (OAuth client credentials). The secret goes into user secrets or Abacus__ClientSecret, never appsettings.json.
+services.AddAbacusApi(configuration);
 
-// or with your own token provider, e.g. for the user-dependent login:
-services.AddAbacusApi(configuration).AddTokenProvider<MyTokenProvider>();
+// Log in as yourself in the browser (desktop/local apps). Needs "RedirectUri": "http://localhost:53682/callback" in the
+// section, registered for a user-dependent service user in Q910. The refresh token is kept DPAPI-encrypted on Windows.
+services.AddAbacusApi(configuration, api => api
+    .UseInteractiveBrowserLogin());
+
+// Or your own IAbacusTokenProvider:
+services.AddAbacusApi(configuration, api => api
+    .UseTokenProvider<MyTokenProvider>());
 ```
 
 ```csharp
@@ -51,3 +60,33 @@ public class Bookings(IAbacusApi abacus)
 ```
 
 `IAbacusApi` and the models are in `Garcipat.AbacusApi.Client.V2026`. Missing or invalid options fail at startup.
+
+## Installing
+
+The package `Garcipat.AbacusApi.Client` is published to **GitHub Packages** (private, like this repository). Add the feed once, with a GitHub personal access token (classic) that has the `read:packages` scope:
+
+```bash
+dotnet nuget add source https://nuget.pkg.github.com/garcipat/index.json --name garcipat --username <github-user> --password <token>
+```
+
+```bash
+dotnet add package Garcipat.AbacusApi.Client
+```
+
+## Releasing
+
+Versions follow [Semantic Versioning](https://semver.org/), starting at 0.1.0; [CHANGELOG.md](CHANGELOG.md) uses the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+
+1. While working, add entries under `## [Unreleased]` in `CHANGELOG.md` (`### Added`, `### Changed`, `### Fixed`, `### Removed`).
+2. To release, rename `## [Unreleased]` to `## [x.y.z] - YYYY-MM-DD`, add a new empty `## [Unreleased]` above it, update the compare links at the bottom, and commit.
+3. Tag and push:
+
+   ```bash
+   git tag v0.1.0
+   ```
+
+   ```bash
+   git push origin v0.1.0
+   ```
+
+The [release workflow](.github/workflows/release.yml) then takes the version from the tag, checks that `CHANGELOG.md` has that section, builds, tests and packs with that version, publishes to GitHub Packages and creates a GitHub Release with the changelog section as notes. A tag like `v0.2.0-beta.1` gives a pre-release. [CI](.github/workflows/ci.yml) runs on every push to `main` and every pull request, and fails if the generated client isn't up to date.

@@ -2,8 +2,8 @@ namespace Garcipat.AbacusApi.Client.Authentication;
 
 /// <summary>
 /// Supplies the bearer token for requests to the Abacus API. The package ships
-/// <see cref="ClientCredentialsTokenProvider"/>; an application using the user-dependent flow registers its own
-/// implementation with <c>AddAbacusApi(...).AddTokenProvider&lt;T&gt;()</c>.
+/// <see cref="TokenProviders.ClientCredentials.ClientCredentialsTokenProvider"/>; an application using the user-dependent flow registers its own
+/// implementation with <c>AddAbacusApi(configuration, api =&gt; api.UseTokenProvider&lt;T&gt;())</c>.
 /// </summary>
 public interface IAbacusTokenProvider
 {

@@ -3,12 +3,13 @@ using System.Text;
 using AwesomeAssertions;
 using Garcipat.AbacusApi.Client;
 using Garcipat.AbacusApi.Client.Authentication;
+using Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
 using Garcipat.AbacusApi.Tests.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 
-namespace Garcipat.AbacusApi.Tests.Client;
+namespace Garcipat.AbacusApi.Tests.Client.Authentication.TokenProviders.ClientCredentials;
 
 public class ClientCredentialsTokenProviderTests
 {
@@ -119,7 +120,7 @@ public class ClientCredentialsTokenProviderTests
     private IHttpClientFactory GetHttpClientFactory()
     {
         var mock = new Mock<IHttpClientFactory>();
-        mock.Setup(x => x.CreateClient(ClientCredentialsTokenProvider.HttpClientName))
+        mock.Setup(x => x.CreateClient(TokenEndpoint.HttpClientName))
             .Returns(() => new HttpClient(_handler, disposeHandler: false));
         return mock.Object;
     }
