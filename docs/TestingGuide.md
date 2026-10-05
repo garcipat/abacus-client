@@ -209,7 +209,7 @@ Prune_WithProjectBookingsPath_ShouldKeepReferencedSchemas
 
 ## Generator Tests
 
-The generator's pruning and patching are tested on **small hand-written OpenAPI documents** inline in the test (a path or two, a schema with an `anyOf [integer, string]` property), not on the 26 MB `docs/openapi.json`. One test may load the real document to check that the configured paths still exist in it; mark it `[Trait("Category", "Slow")]` if it slows down the normal run.
+The generator's pruning and patching are tested on **small hand-written OpenAPI documents** inline in the test (a path or two, a schema with an `anyOf [integer, string]` property), not on the full 26 MB download. The full download is gitignored and missing on CI, so tests never depend on it. A test may load the committed `OpenApi/abacus-<release>.trimmed.json` to check that the configured paths and schemas are in it.
 
 ---
 

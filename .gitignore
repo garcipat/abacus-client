@@ -426,3 +426,7 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Full OpenAPI downloads from the Abacus API Hub (~26 MB each); only the trimmed documents are committed
+src/AbacusApi.Generator/OpenApi/*.json
+!src/AbacusApi.Generator/OpenApi/*.trimmed.json

@@ -115,7 +115,9 @@ Because `Id` is supplied by the client, a consumer can store it and later `PATCH
 
 What Abacus publishes on the API Hub (e.g. [V2026](https://apihub.abacus.ch/endpoints/2026)):
 
-- **"Download YAML-File"**: despite the name, an **OpenAPI 3.0 document in JSON**, ~26 MB, **2 335 paths** covering every entity. **This is the input for generation** (stored as `docs/openapi.json`, renamed so tools parse it as JSON).
+- **"Download YAML-File"**: despite the name, an **OpenAPI 3.0 document in JSON**, ~26 MB, **2 335 paths** covering every entity. **This is the input for generation.**
+  - **Download manually, it can't be linked:** the hub is a Vaadin app and its download links (`/VAADIN/dynamic/resource/<n>/<uuid>/`) are created per browser session. The same URL returns 404 outside that session, so a build or CI can't fetch it.
+  - Saved locally as `src/AbacusApi.Generator/OpenApi/abacus-<release>.json` (e.g. `abacus-2026.201.json`, renamed from `.yaml` so tools parse it as JSON). It is **gitignored** because of its size. The generator trims it to `abacus-<release>.trimmed.json` (only the paths we use, `anyOf` fixed), which **is committed**, so regenerating the same paths needs no download and each Abacus release gives a readable diff.
 - **"Download JSON-File"**: an **OData JSON Schema** (~3.5 MB, starts with `"$id": "ch.abacus.odata"` and `"odata-version": "4.0"`; browsers save it as `swagger.json`). Useful for reading entity shapes but **not OpenAPI**: no paths, operations or servers, so NSwag/Kiota cannot generate from it.
 - A live instance also serves the OData CSDL `$metadata` and Swagger UI.
 
@@ -145,7 +147,7 @@ So the document needs **preprocessing** before generation: keep only the needed 
 Modelled on [garcipat/abusalpdb-client](https://github.com/garcipat/abusalpdb-client).
 
 **Kept from abusalpdb-client:**
-- A generator console app that loads `docs/openapi.json` with NSwag's in-process API (`NSwag.CodeGeneration.CSharp`) and writes the client into a versioned folder (`V2026/AbacusApiV2026.cs`).
+- A generator console app that loads the OpenAPI document (`src/AbacusApi.Generator/OpenApi/`, see [The OpenAPI document](#the-openapi-document)) with NSwag's in-process API (`NSwag.CodeGeneration.CSharp`) and writes the client into a versioned folder (`V2026/AbacusApiV2026.cs`).
 - The generated code is checked in.
 - An options record bound from configuration.
 - A `ServiceConfiguration` DI extension method.
