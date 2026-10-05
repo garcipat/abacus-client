@@ -63,7 +63,7 @@ public class Bookings(IAbacusApi abacus)
 
 ## Installing
 
-The package `Pgarcia.AbacusApi.Client` is published to **GitHub Packages** (private, like this repository). Add the feed once, with a GitHub personal access token (classic) that has the `read:packages` scope:
+The package `Pgarcia.AbacusApi.Client` is published to **GitHub Packages**. The package is public, but GitHub Packages still requires a token to install NuGet packages: add the feed once, with a GitHub personal access token (classic) that has the `read:packages` scope:
 
 ```bash
 dotnet nuget add source https://nuget.pkg.github.com/garcipat/index.json --name garcipat --username <github-user> --password <token>
@@ -78,8 +78,8 @@ dotnet add package Pgarcia.AbacusApi.Client
 Versions follow [Semantic Versioning](https://semver.org/), starting at 0.1.0; [CHANGELOG.md](CHANGELOG.md) uses the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 1. While working, add entries under `## [Unreleased]` in `CHANGELOG.md` (`### Added`, `### Changed`, `### Fixed`, `### Removed`).
-2. To release, rename `## [Unreleased]` to `## [x.y.z] - YYYY-MM-DD`, add a new empty `## [Unreleased]` above it, update the compare links at the bottom, and commit.
-3. Tag and push:
+2. To release, rename `## [Unreleased]` to `## [x.y.z] - YYYY-MM-DD`, add a new empty `## [Unreleased]` above it, update the compare links at the bottom, and merge that through a pull request.
+3. Tag the merged commit on `main` and push the tag:
 
    ```bash
    git tag v0.1.0
@@ -90,3 +90,11 @@ Versions follow [Semantic Versioning](https://semver.org/), starting at 0.1.0; [
    ```
 
 The [release workflow](.github/workflows/release.yml) then takes the version from the tag, checks that `CHANGELOG.md` has that section, builds, tests and packs with that version, publishes to GitHub Packages and creates a GitHub Release with the changelog section as notes. A tag like `v0.2.0-beta.1` gives a pre-release. [CI](.github/workflows/ci.yml) runs on every push to `main` and every pull request, and fails if the generated client isn't up to date.
+
+## Contributing
+
+`main` is protected: every change, including the maintainer's, goes through a pull request, and the CI check (`build`) has to pass before merging. Force-pushes and deleting `main` are blocked. Fork the repository (or create a branch if you have access), open a pull request, and add a line under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) if the change matters to users.
+
+## License
+
+[MIT](LICENSE). Abacus is a product of Abacus Research AG; this project is not affiliated with or endorsed by them.

@@ -17,6 +17,7 @@
     <RepositoryUrl>https://github.com/garcipat/abacus-client</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>abacus;erp;odata;api;client</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>

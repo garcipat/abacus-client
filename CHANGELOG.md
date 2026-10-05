@@ -4,6 +4,10 @@ Notable changes per version. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+### Added
+
+- MIT license; the repository and package are public.
+
 ## [0.1.0] - 2026-10-05
 
 ### Added
