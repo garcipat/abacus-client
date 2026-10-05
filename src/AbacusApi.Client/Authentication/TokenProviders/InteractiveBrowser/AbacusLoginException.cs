@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 /// <summary>The interactive Abacus login failed: Abacus returned an error, or the response could not be trusted.</summary>
 public sealed class AbacusLoginException : Exception

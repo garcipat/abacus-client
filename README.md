@@ -59,18 +59,18 @@ public class Bookings(IAbacusApi abacus)
 }
 ```
 
-`IAbacusApi` and the models are in `Garcipat.AbacusApi.Client.V2026`. Missing or invalid options fail at startup.
+`IAbacusApi` and the models are in `Pgarcia.AbacusApi.Client.V2026`. Missing or invalid options fail at startup.
 
 ## Installing
 
-The package `Garcipat.AbacusApi.Client` is published to **GitHub Packages** (private, like this repository). Add the feed once, with a GitHub personal access token (classic) that has the `read:packages` scope:
+The package `Pgarcia.AbacusApi.Client` is published to **GitHub Packages** (private, like this repository). Add the feed once, with a GitHub personal access token (classic) that has the `read:packages` scope:
 
 ```bash
 dotnet nuget add source https://nuget.pkg.github.com/garcipat/index.json --name garcipat --username <github-user> --password <token>
 ```
 
 ```bash
-dotnet add package Garcipat.AbacusApi.Client
+dotnet add package Pgarcia.AbacusApi.Client
 ```
 
 ## Releasing

@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Client.Authentication;
+namespace Pgarcia.AbacusApi.Client.Authentication;
 
 /// <summary>
 /// Supplies the bearer token for requests to the Abacus API. The package ships

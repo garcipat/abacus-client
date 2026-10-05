@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using Microsoft.Extensions.Options;
 
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
 
 /// <summary>
 /// User-independent service user (OAuth client credentials). Reads the token endpoint from

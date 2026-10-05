@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 /// <summary>
 /// Opens the Abacus login in the system browser and listens on the loopback <c>RedirectUri</c>

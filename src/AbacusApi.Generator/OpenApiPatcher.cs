@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Garcipat.AbacusApi.Generator;
+namespace Pgarcia.AbacusApi.Generator;
 
 /// <summary>Fixes constructs of the Abacus OpenAPI document that NSwag does not map to useful C# types.</summary>
 public static class OpenApiPatcher

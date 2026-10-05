@@ -1,10 +1,10 @@
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication;
 
-namespace Garcipat.AbacusApi.Client;
+namespace Pgarcia.AbacusApi.Client;
 
 /// <summary>
 /// Passed to the <c>configure</c> callback of <c>AddAbacusApi</c> to add features:

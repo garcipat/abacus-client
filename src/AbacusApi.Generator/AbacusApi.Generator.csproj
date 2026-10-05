@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Garcipat.AbacusApi.Generator</RootNamespace>
+    <RootNamespace>Pgarcia.AbacusApi.Generator</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -13,7 +13,7 @@
     <AbacusMajor>$(AbacusRelease.Substring(0, $(AbacusRelease.IndexOf('.'))))</AbacusMajor>
     <!-- Entity sets kept in the trimmed document (needs the full download to take effect). -->
     <AbacusEntitySets>InAndOuts;ProjectBookings;Projects;ServiceCodes;Employees</AbacusEntitySets>
-    <AbacusClientNamespace>Garcipat.AbacusApi.Client.V$(AbacusMajor)</AbacusClientNamespace>
+    <AbacusClientNamespace>Pgarcia.AbacusApi.Client.V$(AbacusMajor)</AbacusClientNamespace>
     <AbacusClientClassName>AbacusApi</AbacusClientClassName>
     <!-- Forward slashes: these paths go to the generator as plain strings, and must work on Windows and Linux. -->
     <AbacusClientOutput>$(MSBuildProjectDirectory)/../AbacusApi.Client/V$(AbacusMajor)/$(AbacusClientClassName)V$(AbacusMajor).cs</AbacusClientOutput>

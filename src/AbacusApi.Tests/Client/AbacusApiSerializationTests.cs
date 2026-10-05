@@ -1,10 +1,10 @@
 using System.Net;
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client.V2026;
-using Garcipat.AbacusApi.Tests.Infrastructure;
-using GeneratedAbacusApi = Garcipat.AbacusApi.Client.V2026.AbacusApi;
+using GeneratedAbacusApi = Pgarcia.AbacusApi.Client.V2026.AbacusApi;
+using Pgarcia.AbacusApi.Client.V2026;
+using Pgarcia.AbacusApi.Tests.Infrastructure;
 
-namespace Garcipat.AbacusApi.Tests.Client;
+namespace Pgarcia.AbacusApi.Tests.Client;
 
 public class AbacusApiSerializationTests
 {

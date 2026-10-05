@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Tests.Infrastructure;
+namespace Pgarcia.AbacusApi.Tests.Infrastructure;
 
 /// <summary>A fact that only runs on Windows (e.g. DPAPI).</summary>
 public sealed class WindowsFactAttribute : FactAttribute

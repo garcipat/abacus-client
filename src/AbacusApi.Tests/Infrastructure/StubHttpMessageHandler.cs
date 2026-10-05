@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace Garcipat.AbacusApi.Tests.Infrastructure;
+namespace Pgarcia.AbacusApi.Tests.Infrastructure;
 
 /// <summary>Returns configured responses per absolute URL and records the requests it received.</summary>
 public sealed class StubHttpMessageHandler : HttpMessageHandler

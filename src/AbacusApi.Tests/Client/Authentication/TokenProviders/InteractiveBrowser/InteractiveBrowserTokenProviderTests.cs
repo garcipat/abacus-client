@@ -3,15 +3,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
-using Garcipat.AbacusApi.Tests.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client;
+using Pgarcia.AbacusApi.Tests.Infrastructure;
 
-namespace Garcipat.AbacusApi.Tests.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Tests.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 public class InteractiveBrowserTokenProviderTests
 {

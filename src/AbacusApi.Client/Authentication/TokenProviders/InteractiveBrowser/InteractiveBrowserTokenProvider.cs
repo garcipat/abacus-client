@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 /// <summary>
 /// User-dependent login (OAuth authorization code). The first call opens the Abacus login in the browser; afterwards

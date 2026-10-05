@@ -3,7 +3,7 @@ using NSwag;
 using NSwag.CodeGeneration.CSharp;
 using NSwag.CodeGeneration.OperationNameGenerators;
 
-namespace Garcipat.AbacusApi.Generator;
+namespace Pgarcia.AbacusApi.Generator;
 
 public static class ClientGenerator
 {

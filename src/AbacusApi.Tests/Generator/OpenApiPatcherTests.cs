@@ -1,8 +1,8 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Generator;
+using Pgarcia.AbacusApi.Generator;
 
-namespace Garcipat.AbacusApi.Tests.Generator;
+namespace Pgarcia.AbacusApi.Tests.Generator;
 
 public class OpenApiPatcherTests
 {

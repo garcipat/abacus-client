@@ -1,12 +1,12 @@
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.V2026;
-using Garcipat.AbacusApi.Tests.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Pgarcia.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client.V2026;
+using Pgarcia.AbacusApi.Tests.Infrastructure;
 using Xunit.Abstractions;
 
-namespace Garcipat.AbacusApi.Tests.Integration;
+namespace Pgarcia.AbacusApi.Tests.Integration;
 
 /// <summary>
 /// Against a real Abacus server with a user-independent service user (client credentials), e.g. the pre-configured

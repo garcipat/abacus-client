@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Tests.Infrastructure;
+namespace Pgarcia.AbacusApi.Tests.Infrastructure;
 
 /// <summary>
 /// A fact against a real Abacus server, skipped unless the given environment variables are set, so it never runs on

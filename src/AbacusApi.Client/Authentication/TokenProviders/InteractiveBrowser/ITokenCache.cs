@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 /// <summary>
 /// Keeps the refresh token of the interactive login between application runs.

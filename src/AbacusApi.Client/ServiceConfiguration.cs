@@ -1,10 +1,10 @@
-using Garcipat.AbacusApi.Client;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using V2026 = Garcipat.AbacusApi.Client.V2026;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
+using Pgarcia.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client;
+using V2026 = Pgarcia.AbacusApi.Client.V2026;
 
 #pragma warning disable IDE0130 // Extension methods live in the DI namespace, as the Microsoft.Extensions.* ones do.
 

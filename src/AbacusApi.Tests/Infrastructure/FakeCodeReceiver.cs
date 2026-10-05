@@ -1,7 +1,7 @@
 using System.Web;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
-namespace Garcipat.AbacusApi.Tests.Infrastructure;
+namespace Pgarcia.AbacusApi.Tests.Infrastructure;
 
 /// <summary>Plays the browser: records the login URL and answers with a code and the <c>state</c> it was given.</summary>
 public sealed class FakeCodeReceiver : IAuthorizationCodeReceiver

@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 /// <summary>Keeps the refresh token for the lifetime of the process only (the default outside Windows).</summary>
 public sealed class MemoryTokenCache : ITokenCache

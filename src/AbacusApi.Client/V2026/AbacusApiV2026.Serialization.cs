@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Garcipat.AbacusApi.Client.V2026;
+namespace Pgarcia.AbacusApi.Client.V2026;
 
 public partial class AbacusApi
 {

@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 
-namespace Garcipat.AbacusApi.Client.Authentication;
+namespace Pgarcia.AbacusApi.Client.Authentication;
 
 /// <summary>Adds the bearer token from <see cref="IAbacusTokenProvider"/> to every request.</summary>
 public sealed class AbacusAuthHandler(IAbacusTokenProvider tokenProvider) : DelegatingHandler

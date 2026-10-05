@@ -1,7 +1,7 @@
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client;
+using Pgarcia.AbacusApi.Client;
 
-namespace Garcipat.AbacusApi.Tests.Client;
+namespace Pgarcia.AbacusApi.Tests.Client;
 
 public class AbacusOptionsTests
 {

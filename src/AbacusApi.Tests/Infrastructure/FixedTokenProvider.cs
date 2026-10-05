@@ -1,6 +1,6 @@
-using Garcipat.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client.Authentication;
 
-namespace Garcipat.AbacusApi.Tests.Infrastructure;
+namespace Pgarcia.AbacusApi.Tests.Infrastructure;
 
 public sealed class FixedTokenProvider : IAbacusTokenProvider
 {

@@ -216,7 +216,7 @@ Settings are MSBuild properties in `AbacusApi.Generator.csproj`, passed to the g
 |---|---|---|
 | `AbacusRelease` | `2026.201` | selects `OpenApi/abacus-{release}[.trimmed].json` |
 | `AbacusEntitySets` | `InAndOuts;ProjectBookings;Projects;ServiceCodes;Employees` | kept by the trimmer (takes effect only with the full download) |
-| `AbacusClientNamespace` | `Garcipat.AbacusApi.Client.V{major}` | |
+| `AbacusClientNamespace` | `Pgarcia.AbacusApi.Client.V{major}` | |
 | `AbacusClientClassName` | `AbacusApi` | interface `I{name}` |
 | `AbacusClientOutput` | `../AbacusApi.Client/V{major}/{class}V{major}.cs` | |
 | `AbacusGenerateOnBuild` | `true` (`false` in Release) | `-p:AbacusGenerateOnBuild=false` to skip |
@@ -226,7 +226,7 @@ Steps:
 1. If the full download `OpenApi/abacus-2026.201.json` exists, it is trimmed and patched into `OpenApi/abacus-2026.201.trimmed.json` (committed; ~360 KB, 10 paths, ~225 schemas):
    - **`OpenApiTrimmer`**: keeps `/{set}` and `/{set}({Id})` of `InAndOuts`, `ProjectBookings`, `Projects`, `ServiceCodes`, `Employees`, plus the components they reference (transitively). Navigation properties to entity types that are **not** kept are removed (entity types are found via each collection `GET`'s `value.items`). Sets operation ids (`ListProjectBookings`, `GetProjectBooking`, `CreateProjectBooking`, `UpdateProjectBooking`, `DeleteProjectBooking`), moves collection responses to named schemas (`ProjectBookingCollection`), drops the `info.description` diagram and unrelated tags. Components keep the source order, so diffs between releases stay readable.
    - **`OpenApiPatcher`**: collapses `anyOf [integer|number, string]` to the numeric type (→ `long`/`decimal` via `format`); replaces `4XX` ranges with `default` (→ `ApiException<Error>`); turns the `$orderby`/`$select`/`$expand` enums into plain strings (→ `IEnumerable<string>`); makes every property of the `-update` (PATCH) schemas optional and nullable. Without that last one, NSwag generates e.g. `DateOnly Date` on `ProjectBookingUpdate`, and every PATCH would send `"Date":"0001-01-01"`.
-2. **`ClientGenerator`** runs NSwag on the trimmed document into `AbacusApi.Client/V2026/AbacusApiV2026.cs` (namespace `Garcipat.AbacusApi.Client.V2026`, class `AbacusApi`, interface `IAbacusApi`): `System.Text.Json`, nullable reference types, `DateOnly`/`TimeOnly`, `UseBaseUrl = false` with an injected `HttpClient`, `SingleClientFromOperationId` naming.
+2. **`ClientGenerator`** runs NSwag on the trimmed document into `AbacusApi.Client/V2026/AbacusApiV2026.cs` (namespace `Pgarcia.AbacusApi.Client.V2026`, class `AbacusApi`, interface `IAbacusApi`): `System.Text.Json`, nullable reference types, `DateOnly`/`TimeOnly`, `UseBaseUrl = false` with an injected `HttpClient`, `SingleClientFromOperationId` naming.
 
 Without the full download, step 1 is skipped and the client is regenerated from the committed trimmed document.
 
@@ -301,7 +301,7 @@ services.AddAbacusApi(configuration, api => api.UseTokenProvider<MyTokenProvider
 - On the first call: discovery, then `IAuthorizationCodeReceiver` shows `authorization_endpoint?response_type=code&client_id&scope&redirect_uri&state` (+ PKCE `code_challenge`/`S256` unless `UsePkce = false`) and returns the callback's query. `state` must match, `error`/`error_description` become an `AbacusLoginException`. The code is exchanged (`grant_type=authorization_code`, `code_verifier`, `client_secret` for a trusted client).
 - Afterwards the access token is renewed with `grant_type=refresh_token`. Abacus returns the refresh token only once and reuses it, so the stored one is only replaced when a new one comes. If Abacus rejects it (400/401: expired, logout, another integration took over the user), it is deleted and the browser login opens again.
 - `LoopbackBrowserCodeReceiver` (default): requires an `http` loopback `RedirectUri`, starts an `HttpListener` on it, opens the system browser, answers other paths (favicon) with 404, shows a "you can close this window" page, and times out after 5 minutes.
-- `ITokenCache`: `FileTokenCache` (default on Windows) stores the refresh token under `%LOCALAPPDATA%\Garcipat.AbacusApi\tokens\{hash of server, Mandant, client}.bin`, encrypted with DPAPI for the current user; an unreadable file counts as "no token". `MemoryTokenCache` elsewhere (log in once per process).
+- `ITokenCache`: `FileTokenCache` (default on Windows) stores the refresh token under `%LOCALAPPDATA%\Pgarcia.AbacusApi\tokens\{hash of server, Mandant, client}.bin`, encrypted with DPAPI for the current user; an unreadable file counts as "no token". `MemoryTokenCache` elsewhere (log in once per process).
 - Still needs a user-dependent service user in Q910 (public client, `RedirectUri` registered, scopes on it and on the user in Q981). Whether Abacus accepts a `localhost` redirect and PKCE is untested (see [Open questions](#open-questions)).
 
 **Versioning:** namespace and folder per Abacus release (`…V2026`); a 2025 server would get a `V2025` generation from the 2025 doc. The package itself follows Semantic Versioning from 0.1.0, independent of the Abacus release; which Abacus release a version is generated from is noted in [CHANGELOG.md](../CHANGELOG.md). Releases are made by pushing a `v*` tag (see [README → Releasing](../README.md#releasing)).
@@ -312,7 +312,7 @@ services.AddAbacusApi(configuration, api => api.UseTokenProvider<MyTokenProvider
 - `Client/` also covers `InteractiveBrowserTokenProvider` (authorization request, PKCE, code exchange, refresh, cached and rejected refresh tokens, state and error handling) with a fake code receiver, `LoopbackBrowserCodeReceiver` with a real `HttpListener`, and `FileTokenCache` (Windows only).
 - `Integration/`: opt-in tests against a real server with the interactive login (own `userinfo`, service codes), skipped unless configured through environment variables (see [TestingGuide.md](TestingGuide.md#integration-tests)).
 
-**Naming:** "Abacus" is Abacus Research AG's product name. The package is prefixed (`Garcipat.AbacusApi.Client`) and described as unofficial.
+**Naming:** "Abacus" is Abacus Research AG's product name. The package is prefixed (`Pgarcia.AbacusApi.Client`) and described as unofficial.
 
 ## Open questions
 

@@ -1,10 +1,10 @@
-using System.Net;
 using System.Net.Sockets;
+using System.Net;
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication;
 
-namespace Garcipat.AbacusApi.Tests.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Tests.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 public class LoopbackBrowserCodeReceiverTests
 {

@@ -21,7 +21,7 @@ src/AbacusApi.Tests/
   Infrastructure/  test doubles and attributes
 ```
 
-Namespaces follow the folders (`Garcipat.AbacusApi.Tests.Client`, …). Don't add a test project per project.
+Namespaces follow the folders (`Pgarcia.AbacusApi.Tests.Client`, …). Don't add a test project per project.
 
 ---
 
@@ -254,7 +254,7 @@ $env:Abacus__Scopes__0 = "openid"
 dotnet test src/AbacusApi.slnx --filter "Category=Integration"
 ```
 
-- The first test opens the browser for the Abacus login. The refresh token is then kept in the DPAPI file cache (`%LOCALAPPDATA%\Garcipat.AbacusApi\tokens\`), so the other tests and later runs log in silently until it expires.
+- The first test opens the browser for the Abacus login. The refresh token is then kept in the DPAPI file cache (`%LOCALAPPDATA%\Pgarcia.AbacusApi\tokens\`), so the other tests and later runs log in silently until it expires.
 - They only read (the user's own OpenID `userinfo`, a few service codes) and print what they get to the test output (`--logger "console;verbosity=detailed"`).
 - To run only unit tests explicitly: `--filter "Category!=Integration"` (not needed in practice, since they are skipped without configuration).
 

@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Garcipat.AbacusApi.Generator;
+namespace Pgarcia.AbacusApi.Generator;
 
 /// <summary>
 /// Reduces the Abacus OpenAPI document (all entity sets of a release) to the given entity sets:

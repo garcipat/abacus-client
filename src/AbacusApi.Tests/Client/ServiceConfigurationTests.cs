@@ -1,16 +1,16 @@
 using System.Net;
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
-using Garcipat.AbacusApi.Client.V2026;
-using Garcipat.AbacusApi.Tests.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.ClientCredentials;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client.V2026;
+using Pgarcia.AbacusApi.Client;
+using Pgarcia.AbacusApi.Tests.Infrastructure;
 
-namespace Garcipat.AbacusApi.Tests.Client;
+namespace Pgarcia.AbacusApi.Tests.Client;
 
 public class ServiceConfigurationTests
 {

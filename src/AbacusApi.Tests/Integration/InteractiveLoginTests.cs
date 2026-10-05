@@ -2,16 +2,16 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.V2026;
-using Garcipat.AbacusApi.Tests.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Pgarcia.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client.V2026;
+using Pgarcia.AbacusApi.Client;
+using Pgarcia.AbacusApi.Tests.Infrastructure;
 using Xunit.Abstractions;
 
-namespace Garcipat.AbacusApi.Tests.Integration;
+namespace Pgarcia.AbacusApi.Tests.Integration;
 
 /// <summary>
 /// Against a real Abacus server: the first test opens the browser for the login; the refresh token is kept in the

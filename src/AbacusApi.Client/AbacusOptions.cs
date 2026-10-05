@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Garcipat.AbacusApi.Client;
+namespace Pgarcia.AbacusApi.Client;
 
 /// <summary>Connection to an Abacus server, bound from the <c>Abacus</c> configuration section.</summary>
 public sealed record AbacusOptions

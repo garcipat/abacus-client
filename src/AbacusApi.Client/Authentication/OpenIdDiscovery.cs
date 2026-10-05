@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
-namespace Garcipat.AbacusApi.Client.Authentication;
+namespace Pgarcia.AbacusApi.Client.Authentication;
 
 /// <summary>
 /// Reads <c>{BaseUrl}/.well-known/openid-configuration</c> once and caches it. Abacus asks clients to always take

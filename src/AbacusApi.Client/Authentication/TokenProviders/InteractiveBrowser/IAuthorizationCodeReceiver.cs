@@ -1,4 +1,4 @@
-namespace Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 /// <summary>
 /// Shows the Abacus login for <paramref name="authorizationUrl"/> and returns the query parameters Abacus sends to

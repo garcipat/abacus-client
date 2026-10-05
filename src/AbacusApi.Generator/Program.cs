@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Garcipat.AbacusApi.Generator;
+namespace Pgarcia.AbacusApi.Generator;
 
 /// <summary>
 /// Runs after each build of this project (the <c>GenerateAbacusClient</c> target in the csproj, which also holds the settings):

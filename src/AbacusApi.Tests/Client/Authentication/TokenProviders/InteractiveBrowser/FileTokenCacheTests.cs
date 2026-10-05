@@ -1,10 +1,10 @@
 using AwesomeAssertions;
-using Garcipat.AbacusApi.Client;
-using Garcipat.AbacusApi.Client.Authentication;
-using Garcipat.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
-using Garcipat.AbacusApi.Tests.Infrastructure;
+using Pgarcia.AbacusApi.Client.Authentication.TokenProviders.InteractiveBrowser;
+using Pgarcia.AbacusApi.Client.Authentication;
+using Pgarcia.AbacusApi.Client;
+using Pgarcia.AbacusApi.Tests.Infrastructure;
 
-namespace Garcipat.AbacusApi.Tests.Client.Authentication.TokenProviders.InteractiveBrowser;
+namespace Pgarcia.AbacusApi.Tests.Client.Authentication.TokenProviders.InteractiveBrowser;
 
 public sealed class FileTokenCacheTests : IDisposable
 {
@@ -13,7 +13,7 @@ public sealed class FileTokenCacheTests : IDisposable
 
     public FileTokenCacheTests()
     {
-        _directory = Path.Combine(Path.GetTempPath(), "Garcipat.AbacusApi.Tests", Guid.NewGuid().ToString("N"));
+        _directory = Path.Combine(Path.GetTempPath(), "Pgarcia.AbacusApi.Tests", Guid.NewGuid().ToString("N"));
         _uut = new FileTokenCache(Path.Combine(_directory, "token.bin"));
     }
 
@@ -80,7 +80,7 @@ public sealed class FileTokenCacheTests : IDisposable
     {
         var cache = FileTokenCache.ForOptions(new AbacusOptions { BaseUrl = new Uri("https://a.test"), Mandant = 1, ClientId = "client" });
 
-        cache.Path.Should().StartWith(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Garcipat.AbacusApi"));
+        cache.Path.Should().StartWith(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Pgarcia.AbacusApi"));
     }
 
     public void Dispose()
