@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Garcipat.AbacusApi.Client</RootNamespace>
+    <AssemblyName>Garcipat.AbacusApi.Client</AssemblyName>
+    <PackageId>Garcipat.AbacusApi.Client</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>

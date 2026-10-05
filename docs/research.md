@@ -150,7 +150,6 @@ Modelled on [garcipat/abusalpdb-client](https://github.com/garcipat/abusalpdb-cl
 - An options record bound from configuration.
 - A `ServiceConfiguration` DI extension method.
 - Packaging through `Directory.Build.props` (`GeneratePackageOnBuild`).
-- Integration tests reading config from environment variables.
 
 **Changed:**
 
@@ -173,8 +172,39 @@ Modelled on [garcipat/abusalpdb-client](https://github.com/garcipat/abusalpdb-cl
 }
 ```
 
-- `AbacusOptions` record (`BaseUrl` as `Uri`, `Mandant`, `ClientId`, `Scopes`, optional `ClientSecret`), bound with `services.AddOptions<AbacusOptions>().Bind(configuration.GetSection("Abacus")).ValidateDataAnnotations().ValidateOnStart()`, so a missing or invalid server fails at startup.
-- The **secret is not in `appsettings.json`**: user secrets or an environment variable (`Abacus__ClientSecret`).
+The section is parsed into a typed `AbacusOptions` through the **options pattern** (`IOptions<T>`), as `AbusalPdbOptions` is in abusalpdb-client:
+
+```csharp
+public sealed record AbacusOptions
+{
+    public const string SectionName = "Abacus";
+
+    [Required] public Uri BaseUrl { get; init; } = null!;   // e.g. https://abacus.example.ch
+    [Range(1, int.MaxValue)] public int Mandant { get; init; }
+    [Required] public string ClientId { get; init; } = string.Empty;
+    public string? ClientSecret { get; init; }             // client credentials only, never in appsettings.json
+    public IReadOnlyList<string> Scopes { get; init; } = [];
+
+    public Uri EntityBaseAddress => new(BaseUrl, $"api/entity/v1/mandants/{Mandant}/");
+}
+```
+
+```csharp
+services.AddOptions<AbacusOptions>()
+        .Bind(configuration.GetSection(AbacusOptions.SectionName))
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
+
+services.AddHttpClient<IAbacusApi, AbacusApi>((sp, http) =>
+            http.BaseAddress = sp.GetRequiredService<IOptions<AbacusOptions>>().Value.EntityBaseAddress)
+        .AddHttpMessageHandler<AbacusAuthHandler>();
+```
+
+- `ValidateOnStart()`: a missing or invalid `BaseUrl`/`Mandant`/`ClientId` fails when the host starts, not on the first request.
+- Library classes take `IOptions<AbacusOptions>`: the typed client's base address, `AbacusAuthHandler`, and `ClientCredentialsTokenProvider` (token endpoint discovery, `ClientId`/`ClientSecret`, `Scopes`). Consumers can inject the same `IOptions<AbacusOptions>`, e.g. Tally to show the configured server.
+- Overloads for consumers that don't use the default section: `AddAbacusApi(IConfigurationSection section)` and `AddAbacusApi(Action<AbacusOptions> configure)`. The latter is handy in tests.
+- `IOptions` (a singleton snapshot) is enough. The server doesn't change at runtime, and the typed `HttpClient`'s base address is set when the client is created anyway.
+- The **secret is not in `appsettings.json`**. It binds onto the same `ClientSecret` property from user secrets or an environment variable (`Abacus__ClientSecret`), since all configuration providers feed the same section.
 - Token endpoint discovery (`{BaseUrl}/.well-known/openid-configuration`) happens once and is cached.
 
 **Auth is pluggable**, since the right flow depends on the consumer:
@@ -190,10 +220,10 @@ services.AddAbacusApi(configuration)
 
 **Versioning:** namespace and folder per Abacus release (`…V2026`). The package version tracks it (e.g. `2026.201.0` for "V 2026.201"). A 2025 server would get a `V2025` generation from the 2025 doc.
 
-**Tests:**
+**Tests:** one test project, **`AbacusApi.Tests`**, for all projects, with a folder per project under test (`Client/`, `Generator/`, …) rather than a test project per project.
 - Unit tests for the document pruning/patching (the generated `ProjectBooking` has `long? EmployeeId`, `decimal? Quantity`).
 - Unit tests for `AbacusAuthHandler` (token cached, renewed after expiry, 401 → one retry with a fresh token).
-- Integration tests against a test Mandant via environment variables, skipped when no config is present.
+- No integration tests for now: there is no Abacus server or container to test against. The calls we use are tested against a stub `HttpMessageHandler` (see [TestingGuide.md](TestingGuide.md)).
 
 **Naming:** "Abacus" is Abacus Research AG's product name. The package is prefixed (`Garcipat.AbacusApi.Client`) and described as unofficial.
 
@@ -207,7 +237,7 @@ services.AddAbacusApi(configuration)
 
 1. Is `InAndOuts` writable, and with which scope?
 2. Does a `localhost` redirect URL work for the user-dependent flow?
-3. Is there a test server/Mandant to run the integration tests against (the API Hub has a "Testservers" page)?
+3. Is there a test server/Mandant (the API Hub has a "Testservers" page)? That would allow integration tests later.
 
 ## Sources
 
