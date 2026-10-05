@@ -15,7 +15,8 @@
     <AbacusEntitySets>InAndOuts;ProjectBookings;Projects;ServiceCodes;Employees</AbacusEntitySets>
     <AbacusClientNamespace>Garcipat.AbacusApi.Client.V$(AbacusMajor)</AbacusClientNamespace>
     <AbacusClientClassName>AbacusApi</AbacusClientClassName>
-    <AbacusClientOutput>$(MSBuildProjectDirectory)\..\AbacusApi.Client\V$(AbacusMajor)\$(AbacusClientClassName)V$(AbacusMajor).cs</AbacusClientOutput>
+    <!-- Forward slashes: these paths go to the generator as plain strings, and must work on Windows and Linux. -->
+    <AbacusClientOutput>$(MSBuildProjectDirectory)/../AbacusApi.Client/V$(AbacusMajor)/$(AbacusClientClassName)V$(AbacusMajor).cs</AbacusClientOutput>
     <!-- Generate after building this project; off for Release (packing uses the committed file). Override with -p:AbacusGenerateOnBuild=false. -->
     <AbacusGenerateOnBuild Condition="'$(AbacusGenerateOnBuild)' == '' And '$(Configuration)' != 'Release'">true</AbacusGenerateOnBuild>
   </PropertyGroup>
@@ -26,7 +27,7 @@
 
   <ItemGroup>
     <!-- A glob, so a missing full download (gitignored, absent on CI) doesn't force a rerun. -->
-    <AbacusOpenApiDocument Include="OpenApi\abacus-$(AbacusRelease)*.json" />
+    <AbacusOpenApiDocument Include="OpenApi/abacus-$(AbacusRelease)*.json" />
   </ItemGroup>
 
   <!--
@@ -39,7 +40,7 @@
           Condition="'$(AbacusGenerateOnBuild)' == 'true'"
           Inputs="$(TargetPath);$(MSBuildProjectFullPath);@(AbacusOpenApiDocument)"
           Outputs="$(AbacusClientOutput)">
-    <Exec Command="dotnet &quot;$(TargetPath)&quot; --release $(AbacusRelease) --openapi-directory &quot;$(MSBuildProjectDirectory)\OpenApi&quot; --entity-sets &quot;$(AbacusEntitySets)&quot; --namespace $(AbacusClientNamespace) --class-name $(AbacusClientClassName) --output &quot;$(AbacusClientOutput)&quot;" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; --release $(AbacusRelease) --openapi-directory &quot;$(MSBuildProjectDirectory)/OpenApi&quot; --entity-sets &quot;$(AbacusEntitySets)&quot; --namespace $(AbacusClientNamespace) --class-name $(AbacusClientClassName) --output &quot;$(AbacusClientOutput)&quot;" />
   </Target>
 
 </Project>
